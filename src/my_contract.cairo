@@ -1,10 +1,11 @@
 //! Contract to mock ERC20 with specfic decimals
 use starknet::ContractAddress;
 use openzeppelin::token::erc20::interface::IERC20;
+use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
 
 #[starknet::interface]
 trait IMyContract<TContractState> {
-    fn claim(ref self: TContractState, asset: ContractAddress, account: ContractAddress);
+    fn claim(ref self: TContractState, asset: IERC20Dispatcher, account: ContractAddress);
 }
 
 
@@ -18,11 +19,10 @@ mod MyContract {
 
     #[external(v0)]
     impl MyContractImpl of super::IMyContract<ContractState> {
-        fn claim(ref self: ContractState, asset: ContractAddress, account: ContractAddress) {
-            let balance = IERC20Dispatcher { contract_address: asset }
-                .balance_of(get_contract_address());
+        fn claim(ref self: ContractState, asset: IERC20Dispatcher, account: ContractAddress) {
+            let balance = asset.balance_of(get_contract_address());
 
-            IERC20Dispatcher { contract_address: asset }.transfer(account, balance);
+            asset.transfer(account, balance);
         }
     }
 }
